@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Günlüğü</title>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --border: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --input: #020617;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      width: min(1650px, 96%);
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 14px;
+    }
+
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+
+    .section h2 {
+      margin: 0 0 16px;
+      font-size: 19px;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .card .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .card .value {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .positive {
+      color: var(--green);
+    }
+
+    .negative {
+      color: var(--red);
+    }
+
+    .neutral {
+      color: var(--text);
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      background: var(--input);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--blue);
+    }
+
+    textarea {
+      min-height: 76px;
+      resize: vertical;
+    }
+
+    .span-2 {
+      grid-column: span 2;
+    }
+
+    .span-4 {
+      grid-column: span 4;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    button {
+      border: none;
+      border-radius: 9px;
+      padding: 10px 14px;
+      cursor: pointer;
+      color: white;
+      background: var(--blue);
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    button:hover {
+      opacity: 0.88;
+    }
+
+    .btn-secondary {
+      background: #475569;
+    }
+
+    .btn-danger {
+      background: var(--red);
+    }
+
+    .btn-success {
+      background: var(--green);
+    }
+
+    .btn-warning {
+      background: var(--yellow);
+      color: #111827;
+    }
+
+    .btn-purple {
+      background: var(--purple);
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1450px;
+      border-collapse: collapse;
+      background: var(--panel);
+    }
+
+    th,
+    td {
+      padding: 11px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 13px;
+      white-space: nowrap;
+      vertical-align: top;
+    }
+
+    th {
+      background: #020617;
+      color: var(--muted);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .row-actions button {
+      padding: 7px 9px;
+      font-size: 12px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin: 2px 3px 2px 0;
+    }
+
+    .pill-long {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .pill-short {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .pill-open {
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .pill-closed {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .pill-tag {
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .pill-mistake {
+      background: rgba(245, 158, 11, 0.14);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .empty {
+      padding: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .data-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .file-input {
+      max-width: 260px;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .analysis-box {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      overflow-x: auto;
+    }
+
+    .analysis-box h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .mini-table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      padding: 8px;
+      font-size: 12px;
+    }
+
+    .mini-table th {
+      position: static;
+    }
+
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1250px) {
+      .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      form,
+      .filters {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .span-2,
+      .span-4 {
+        grid-column: span 2;
+      }
+
+      .analysis-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 650px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .dashboard,
+      form,
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .span-2,
+      .span-4 {
+        grid-column: span 1;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Trading Günlüğü</h1>
+        <div class="subtitle">
+          Açık ve kapalı işlemlerini kaydet, ortalama maliyetini takip et, psikoloji ve hata kalıplarını analiz et.
+        </div>
+      </div>
+
+      <button class="btn-warning" onclick="fillDemoData()">Demo Veri Ekle</button>
+    </header>
+
+    <section class="dashboard" id="dashboard"></section>
+
+    <section class="section">
+      <h2 id="formTitle">Yeni İşlem Ekle</h2>
+
+      <form id="tradeForm">
+        <div class="field">
+          <label for="date">Tarih</label>
+          <input type="date" id="date" required />
+        </div>
+
+        <div class="field">
+          <label for="symbol">Sembol</label>
+          <input type="text" id="symbol" placeholder="THYAO, BTCUSDT..." required />
+        </div>
+
+        <div class="field">
+          <label for="market">Piyasa</label>
+          <select id="market">
+            <option value="BIST">BIST</option>
+            <option value="Kripto">Kripto</option>
+            <option value="Forex">Forex</option>
+            <option value="ABD Hisse">ABD Hisse</option>
+            <option value="Emtia">Emtia</option>
+            <option value="Diğer">Diğer</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="direction">Yön</label>
+          <select id="direction">
+            <option value="Long">Long</option>
+            <option value="Short">Short</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="status">İşlem Durumu</label>
+          <select id="status" onchange="toggleExitRequirement()">
+            <option value="Kapalı">Kapalı</option>
+            <option value="Açık">Açık</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="strategy">Strateji</label>
+          <input type="text" id="strategy" placeholder="Destek-Direnç, Breakout..." />
+        </div>
+
+        <div class="field">
+          <label for="entry">Giriş Fiyatı</label>
+          <input type="number" id="entry" step="0.0001" required />
+        </div>
+
+        <div class="field">
+          <label for="exit">Çıkış Fiyatı</label>
+          <input type="number" id="exit" step="0.0001" />
+        </div>
+
+        <div class="field">
+          <label for="quantity">Miktar / Lot</label>
+          <input type="number" id="quantity" step="0.0001" required />
+        </div>
+
+        <div class="field">
+          <label for="commission">Komisyon</label>
+          <input type="number" id="commission" step="0.01" value="0" />
+        </div>
+
+        <div class="field">
+          <label for="stopLoss">Stop Loss</label>
+          <input type="number" id="stopLoss" step="0.0001" />
+        </div>
+
+        <div class="field">
+          <label for="takeProfit">Take Profit</label>
+          <input type="number" id="takeProfit" step="0.0001" />
+        </div>
+
+        <div class="field">
+          <label for="mood">Duygu Durumu</label>
+          <select id="mood">
+            <option value="">Seçiniz</option>
+            <option value="Sakin">Sakin</option>
+            <option value="Aceleci">Aceleci</option>
+            <option value="Korkulu">Korkulu</option>
+            <option value="FOMO">FOMO</option>
+            <option value="Özgüvenli">Özgüvenli</option>
+            <option value="Stresli">Stresli</option>
+            <option value="Revenge Trade">Revenge Trade</option>
+            <option value="Kararsız">Kararsız</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="ruleFollowed">Kurala Uyum</label>
+          <select id="ruleFollowed">
+            <option value="Evet">Evet</option>
+            <option value="Kısmen">Kısmen</option>
+            <option value="Hayır">Hayır</option>
+          </select>
+        </div>
+
+        <div class="field span-2">
+          <label for="mistake">Hata Etiketleri</label>
+          <input type="text" id="mistake" placeholder="Erken çıkış, geç giriş, stop taşımak..." />
+          <div class="hint">
+            Birden fazla hata varsa virgülle ayır: <b>FOMO, stop taşımak, plansız işlem</b>
+          </div>
+        </div>
+
+        <div class="field span-2">
+          <label for="tags">Genel Etiketler</label>
+          <input type="text" id="tags" placeholder="Bilanço, direnç kırılımı, haber, endeks zayıf..." />
+          <div class="hint">
+            Strateji dışı gözlemler için kullan: <b>bilanço, hacim, endeks, destek, direnç</b>
+          </div>
+        </div>
+
+        <div class="field span-4">
+          <label for="note">İşlem Notu</label>
+          <textarea id="note" placeholder="Neden girdim? Neden çıktım? İşlemde neyi doğru / yanlış yaptım?"></textarea>
+        </div>
+
+        <div class="actions span-4">
+          <button type="submit" id="submitBtn">İşlemi Kaydet</button>
+          <button type="button" class="btn-secondary" onclick="resetForm()">Formu Temizle</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="section">
+      <h2>Açık Pozisyon Özeti</h2>
+      <div id="openPositionsArea"></div>
+      <div class="small-note">
+        Ağırlıklı ortalama maliyet, aynı sembol ve aynı yön için açık pozisyonların giriş fiyatı × miktar toplamının toplam miktara bölünmesiyle hesaplanır.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Analiz Paneli</h2>
+
+      <div class="analysis-grid">
+        <div class="analysis-box">
+          <h3>Psikoloji Analizi</h3>
+          <div id="psychologyAnalysis"></div>
+        </div>
+
+        <div class="analysis-box">
+          <h3>Hata Analizi</h3>
+          <div id="mistakeAnalysis"></div>
+        </div>
+
+        <div class="analysis-box">
+          <h3>Etiket Analizi</h3>
+          <div id="tagAnalysis"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Filtreler</h2>
+
+      <div class="filters">
+        <div class="field">
+          <label for="filterSymbol">Sembol Ara</label>
+          <input type="text" id="filterSymbol" placeholder="THYAO..." oninput="renderAll()" />
+        </div>
+
+        <div class="field">
+          <label for="filterStrategy">Strateji Ara</label>
+          <input type="text" id="filterStrategy" placeholder="Breakout..." oninput="renderAll()" />
+        </div>
+
+        <div class="field">
+          <label for="filterTag">Etiket Ara</label>
+          <input type="text" id="filterTag" placeholder="FOMO, bilanço..." oninput="renderAll()" />
+        </div>
+
+        <div class="field">
+          <label for="filterDirection">Yön</label>
+          <select id="filterDirection" onchange="renderAll()">
+            <option value="">Tümü</option>
+            <option value="Long">Long</option>
+            <option value="Short">Short</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="filterStatus">Durum</label>
+          <select id="filterStatus" onchange="renderAll()">
+            <option value="">Tümü</option>
+            <option value="Açık">Açık</option>
+            <option value="Kapalı">Kapalı</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="filterResult">Sonuç</label>
+          <select id="filterResult" onchange="renderAll()">
+            <option value="">Tümü</option>
+            <option value="win">Kazanan</option>
+            <option value="loss">Kaybeden</option>
+            <option value="breakeven">Başabaş</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="filterRule">Kurala Uyum</label>
+          <select id="filterRule" onchange="renderAll()">
+            <option value="">Tümü</option>
+            <option value="Evet">Evet</option>
+            <option value="Kısmen">Kısmen</option>
+            <option value="Hayır">Hayır</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" onclick="clearFilters()">Filtreleri Temizle</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>İşlem Listesi</h2>
+      <div id="tableArea"></div>
+    </section>
+
+    <section class="section">
+      <h2>Veri Yönetimi</h2>
+
+      <div class="data-actions">
+        <button class="btn-success" onclick="exportJSON()">JSON Yedek Al</button>
+        <button class="btn-purple" onclick="exportCSV()">CSV Dışa Aktar</button>
+
+        <input class="file-input" type="file" id="importFile" accept=".json" />
+        <button onclick="importJSON()">JSON İçe Aktar</button>
+
+        <button class="btn-danger" onclick="clearAllData()">Tüm Veriyi Sil</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "tradingJournalTrades_v4";
+
+    let trades = [];
+    let editingId = null;
+
+    const form = document.getElementById("tradeForm");
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadTrades();
+      setToday();
+      toggleExitRequirement();
+      renderAll();
+    });
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const rawTrade = getFormData();
+
+      if (rawTrade.status === "Kapalı" && !rawTrade.exit) {
+        alert("Kapalı işlem için çıkış fiyatı girmen gerekir.");
+        return;
+      }
+
+      if (rawTrade.status === "Açık") {
+        rawTrade.exit = 0;
+      }
+
+      const calculatedTrade = calculateTrade(rawTrade);
+
+      if (editingId) {
+        trades = trades.map(trade =>
+          trade.id === editingId ? { ...calculatedTrade, id: editingId } : trade
+        );
+      } else {
+        trades.push({
+          ...calculatedTrade,
+          id: Date.now()
+        });
+      }
+
+      saveTrades();
+      resetForm();
+      renderAll();
+    });
+
+    function renderAll() {
+      renderDashboard();
+      renderOpenPositionsSummary();
+      renderAnalysis();
+      renderTrades();
+    }
+
+    function setToday() {
+      document.getElementById("date").value = new Date().toISOString().slice(0, 10);
+    }
+
+    function getFormData() {
+      return {
+        date: document.getElementById("date").value,
+        symbol: document.getElementById("symbol").value.trim().toUpperCase(),
+        market: document.getElementById("market").value,
+        direction: document.getElementById("direction").value,
+        status: document.getElementById("status").value,
+        strategy: document.getElementById("strategy").value.trim(),
+        entry: toNumber(document.getElementById("entry").value),
+        exit: toNumber(document.getElementById("exit").value),
+        quantity: toNumber(document.getElementById("quantity").value),
+        commission: toNumber(document.getElementById("commission").value),
+        stopLoss: toNumber(document.getElementById("stopLoss").value),
+        takeProfit: toNumber(document.getElementById("takeProfit").value),
+        mood: document.getElementById("mood").value,
+        ruleFollowed: document.getElementById("ruleFollowed").value,
+        mistake: document.getElementById("mistake").value.trim(),
+        mistakeTags: parseTags(document.getElementById("mistake").value),
+        tags: parseTags(document.getElementById("tags").value),
+        note: document.getElementById("note").value.trim()
+      };
+    }
+
+    function calculateTrade(trade) {
+      const entry = trade.entry;
+      const exit = trade.exit;
+      const quantity = trade.quantity;
+      const commission = trade.commission || 0;
+      const status = trade.status || "Kapalı";
+
+      const isOpen = status === "Açık";
+
+      let grossPnL = null;
+      let returnPct = null;
+      let netPnL = null;
+      let rMultiple = null;
+
+      if (!isOpen) {
+        if (trade.direction === "Long") {
+          grossPnL = (exit - entry) * quantity;
+          returnPct = entry ? ((exit - entry) / entry) * 100 : 0;
+        } else {
+          grossPnL = (entry - exit) * quantity;
+          returnPct = entry ? ((entry - exit) / entry) * 100 : 0;
+        }
+
+        netPnL = grossPnL - commission;
+      }
+
+      const riskAmount = trade.stopLoss
+        ? Math.abs(entry - trade.stopLoss) * quantity
+        : 0;
+
+      const rewardAmount = trade.takeProfit
+        ? Math.abs(trade.takeProfit - entry) * quantity
+        : 0;
+
+      const rrRatio = riskAmount > 0 ? rewardAmount / riskAmount : 0;
+
+      if (!isOpen) {
+        rMultiple = riskAmount > 0 ? netPnL / riskAmount : 0;
+      }
+
+      return {
+        ...trade,
+        status,
+        grossPnL,
+        netPnL,
+        returnPct,
+        riskAmount,
+        rewardAmount,
+        rrRatio,
+        rMultiple
+      };
+    }
+
+    function renderDashboard() {
+      const total = trades.length;
+      const openTrades = trades.filter(t => t.status === "Açık");
+      const closedTrades = trades.filter(t => t.status !== "Açık");
+
+      const closedTotal = closedTrades.length;
+      const wins = closedTrades.filter(t => t.netPnL > 0).length;
+      const losses = closedTrades.filter(t => t.netPnL < 0).length;
+      const breakeven = closedTrades.filter(t => t.netPnL === 0).length;
+
+      const totalPnL = sum(closedTrades.map(t => t.netPnL || 0));
+      const winRate = closedTotal ? (wins / closedTotal) * 100 : 0;
+      const avgR = closedTotal ? sum(closedTrades.map(t => t.rMultiple || 0)) / closedTotal : 0;
+
+      const bestTrade = closedTotal ? Math.max(...closedTrades.map(t => t.netPnL || 0)) : 0;
+      const worstTrade = closedTotal ? Math.min(...closedTrades.map(t => t.netPnL || 0)) : 0;
+
+      const ruleYes = trades.filter(t => t.ruleFollowed === "Evet").length;
+      const ruleRate = total ? (ruleYes / total) * 100 : 0;
+
+      const totalOpenRisk = sum(openTrades.map(t => t.riskAmount || 0));
+      const totalOpenReward = sum(openTrades.map(t => t.rewardAmount || 0));
+
+      const mostCostlyMistake = getMostCostlyItem("mistakeTags");
+      const bestMood = getBestGroupByAverage("mood");
+
+      const dashboard = document.getElementById("dashboard");
+
+      dashboard.innerHTML = `
+        ${dashboardCard("Toplam İşlem", total)}
+        ${dashboardCard("Açık Pozisyon", openTrades.length)}
+        ${dashboardCard("Kapalı İşlem", closedTotal)}
+        ${dashboardCard("Kazanan / Kaybeden", `${wins} / ${losses}`)}
+        ${dashboardCard("Başabaş İşlem", breakeven)}
+        ${dashboardCard("Win Rate", `${formatNumber(winRate)}%`)}
+        ${dashboardCard("Gerçekleşmiş Net K/Z", formatMoney(totalPnL), pnlClass(totalPnL))}
+        ${dashboardCard("Ortalama R", formatNullable(avgR))}
+        ${dashboardCard("Açık Pozisyon Riski", formatMoney(totalOpenRisk), totalOpenRisk > 0 ? "negative" : "neutral")}
+        ${dashboardCard("Potansiyel Ödül", formatMoney(totalOpenReward), totalOpenReward > 0 ? "positive" : "neutral")}
+        ${dashboardCard("En İyi İşlem", formatMoney(bestTrade), pnlClass(bestTrade))}
+        ${dashboardCard("En Kötü İşlem", formatMoney(worstTrade), pnlClass(worstTrade))}
+        ${dashboardCard("Kurala Uyum", `${formatNumber(ruleRate)}%`)}
+        ${dashboardCard("En Maliyetli Hata", mostCostlyMistake || "-")}
+        ${dashboardCard("En İyi Psikoloji", bestMood || "-")}
+        ${dashboardCard("Toplam Etiket", getUniqueTagCount())}
+      `;
+    }
+
+    function dashboardCard(label, value, extraClass = "neutral") {
+      return `
+        <div class="card">
+          <div class="label">${label}</div>
+          <div class="value ${extraClass}">${value}</div>
+        </div>
+      `;
+    }
+
+    function renderOpenPositionsSummary() {
+      const target = document.getElementById("openPositionsArea");
+      const groups = getOpenPositionGroups();
+
+      if (groups.length === 0) {
+        target.innerHTML = `<div class="empty">Açık pozisyon bulunmuyor.</div>`;
+        return;
+      }
+
+      const rows = groups
+        .map(group => `
+          <tr>
+            <td><strong>${escapeHTML(group.symbol)}</strong></td>
+            <td>
+              <span class="pill ${group.direction === "Long" ? "pill-long" : "pill-short"}">
+                ${escapeHTML(group.direction)}
+              </span>
+            </td>
+            <td>${group.count}</td>
+            <td>${formatNumber(group.totalQuantity)}</td>
+            <td><strong>${formatNumber(group.weightedAverageCost)}</strong></td>
+            <td>${formatMoney(group.totalPositionValue)}</td>
+            <td class="negative">${formatMoney(group.totalRisk)}</td>
+            <td class="positive">${formatMoney(group.totalReward)}</td>
+            <td>${formatNumber(group.rrRatio)}</td>
+            <td>
+              <button
+                class="btn-danger"
+                onclick="closeOpenPositions('${encodeURIComponent(group.symbol)}', '${encodeURIComponent(group.direction)}')">
+                Tümünü Kapat
+              </button>
+            </td>
+          </tr>
+        `)
+        .join("");
+
+      target.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sembol</th>
+                <th>Yön</th>
+                <th>Pozisyon Sayısı</th>
+                <th>Toplam Miktar</th>
+                <th>Ağırlıklı Ortalama Maliyet</th>
+                <th>Toplam Pozisyon Büyüklüğü</th>
+                <th>Toplam Risk</th>
+                <th>Potansiyel Ödül</th>
+                <th>Risk/Ödül</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function getOpenPositionGroups() {
+      const openTrades = trades.filter(trade => trade.status === "Açık");
+
+      const grouped = openTrades.reduce((acc, trade) => {
+        const key = `${trade.symbol}__${trade.direction}`;
+
+        if (!acc[key]) {
+          acc[key] = {
+            symbol: trade.symbol,
+            direction: trade.direction,
+            count: 0,
+            totalQuantity: 0,
+            weightedCostTotal: 0,
+            totalPositionValue: 0,
+            totalRisk: 0,
+            totalReward: 0
+          };
+        }
+
+        acc[key].count += 1;
+        acc[key].totalQuantity += trade.quantity || 0;
+        acc[key].weightedCostTotal += (trade.entry || 0) * (trade.quantity || 0);
+        acc[key].totalPositionValue += (trade.entry || 0) * (trade.quantity || 0);
+        acc[key].totalRisk += trade.riskAmount || 0;
+        acc[key].totalReward += trade.rewardAmount || 0;
+
+        return acc;
+      }, {});
+
+      return Object.values(grouped).map(group => {
+        const weightedAverageCost = group.totalQuantity > 0
+          ? group.weightedCostTotal / group.totalQuantity
+          : 0;
+
+        const rrRatio = group.totalRisk > 0
+          ? group.totalReward / group.totalRisk
+          : 0;
+
+        return {
+          ...group,
+          weightedAverageCost,
+          rrRatio
+        };
+      });
+    }
+
+    function closeOpenPositions(encodedSymbol, encodedDirection) {
+      const symbol = decodeURIComponent(encodedSymbol);
+      const direction = decodeURIComponent(encodedDirection);
+
+      const targetTrades = trades.filter(trade =>
+        trade.status === "Açık" &&
+        trade.symbol === symbol &&
+        trade.direction === direction
+      );
+
+      if (targetTrades.length === 0) {
+        alert("Kapatılacak açık pozisyon bulunamadı.");
+        return;
+      }
+
+      const closePriceInput = prompt(
+        `${symbol} / ${direction} yönündeki ${targetTrades.length} açık pozisyonu kapatmak için kapanış fiyatını gir:`
+      );
+
+      if (closePriceInput === null) return;
+
+      const closePrice = parseUserNumber(closePriceInput);
+
+      if (!closePrice || closePrice <= 0) {
+        alert("Geçerli bir kapanış fiyatı girmen gerekir.");
+        return;
+      }
+
+      const commissionInput = prompt(
+        "Toplam komisyon gir. Komisyon yoksa boş bırak veya 0 yaz:",
+        "0"
+      );
+
+      if (commissionInput === null) return;
+
+      const totalCommission = parseUserNumber(commissionInput) || 0;
+
+      const confirmed = confirm(
+        `${symbol} / ${direction} yönündeki tüm açık pozisyonlar ${formatNumber(closePrice)} fiyatından kapatılacak. Onaylıyor musun?`
+      );
+
+      if (!confirmed) return;
+
+      const totalQuantity = sum(targetTrades.map(trade => trade.quantity || 0));
+
+      trades = trades.map(trade => {
+        const shouldClose =
+          trade.status === "Açık" &&
+          trade.symbol === symbol &&
+          trade.direction === direction;
+
+        if (!shouldClose) return trade;
+
+        const commissionShare = totalQuantity > 0
+          ? totalCommission * ((trade.quantity || 0) / totalQuantity)
+          : 0;
+
+        const updatedTrade = {
+          ...trade,
+          status: "Kapalı",
+          exit: closePrice,
+          commission: (trade.commission || 0) + commissionShare,
+          note: appendCloseNote(trade.note, closePrice)
+        };
+
+        return calculateTrade(updatedTrade);
+      });
+
+      saveTrades();
+      renderAll();
+
+      alert(`${symbol} açık pozisyonları kapatıldı.`);
+    }
+
+    function appendCloseNote(existingNote, closePrice) {
+      const closeText = `Toplu kapatma fiyatı: ${formatNumber(closePrice)}.`;
+
+      if (!existingNote) return closeText;
+
+      return `${existingNote}\n${closeText}`;
+    }
+
+    function renderAnalysis() {
+      renderPsychologyAnalysis();
+      renderMistakeAnalysis();
+      renderTagAnalysis();
+    }
+
+    function renderPsychologyAnalysis() {
+      const target = document.getElementById("psychologyAnalysis");
+      const closedTrades = trades.filter(t => t.status !== "Açık");
+      const grouped = groupBySingleValue(closedTrades, "mood", "Belirtilmemiş");
+
+      if (Object.keys(grouped).length === 0) {
+        target.innerHTML = `<div class="empty">Analiz için kapalı işlem kaydı yok.</div>`;
+        return;
+      }
+
+      target.innerHTML = createAnalysisTable(grouped, "Duygu");
+    }
+
+    function renderMistakeAnalysis() {
+      const target = document.getElementById("mistakeAnalysis");
+      const closedTrades = trades.filter(t => t.status !== "Açık");
+      const grouped = groupByArrayValue(closedTrades, "mistakeTags");
+
+      if (Object.keys(grouped).length === 0) {
+        target.innerHTML = `<div class="empty">Kapalı işlemlerde hata etiketi girilmemiş.</div>`;
+        return;
+      }
+
+      target.innerHTML = createAnalysisTable(grouped, "Hata");
+    }
+
+    function renderTagAnalysis() {
+      const target = document.getElementById("tagAnalysis");
+      const closedTrades = trades.filter(t => t.status !== "Açık");
+      const grouped = groupByArrayValue(closedTrades, "tags");
+
+      if (Object.keys(grouped).length === 0) {
+        target.innerHTML = `<div class="empty">Kapalı işlemlerde genel etiket girilmemiş.</div>`;
+        return;
+      }
+
+      const table = createAnalysisTable(grouped, "Etiket");
+      const cloud = createTagCloud(grouped);
+
+      target.innerHTML = `
+        ${cloud}
+        <div style="height: 12px;"></div>
+        ${table}
+      `;
+    }
+
+    function createAnalysisTable(grouped, firstColumnName) {
+      const rows = Object.entries(grouped)
+        .map(([name, items]) => {
+          const count = items.length;
+          const wins = items.filter(t => t.netPnL > 0).length;
+          const totalPnL = sum(items.map(t => t.netPnL || 0));
+          const avgPnL = count ? totalPnL / count : 0;
+          const winRate = count ? (wins / count) * 100 : 0;
+          const avgR = count ? sum(items.map(t => t.rMultiple || 0)) / count : 0;
+
+          return {
+            name,
+            count,
+            totalPnL,
+            avgPnL,
+            winRate,
+            avgR
+          };
+        })
+        .sort((a, b) => a.totalPnL - b.totalPnL)
+        .map(row => `
+          <tr>
+            <td><strong>${escapeHTML(row.name)}</strong></td>
+            <td>${row.count}</td>
+            <td class="${pnlClass(row.totalPnL)}">${formatMoney(row.totalPnL)}</td>
+            <td class="${pnlClass(row.avgPnL)}">${formatMoney(row.avgPnL)}</td>
+            <td>${formatNumber(row.winRate)}%</td>
+            <td>${formatNumber(row.avgR)}</td>
+          </tr>
+        `)
+        .join("");
+
+      return `
+        <table class="mini-table">
+          <thead>
+            <tr>
+              <th>${firstColumnName}</th>
+              <th>İşlem</th>
+              <th>Toplam K/Z</th>
+              <th>Ort. K/Z</th>
+              <th>Win Rate</th>
+              <th>Ort. R</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function createTagCloud(grouped) {
+      const tags = Object.entries(grouped)
+        .sort((a, b) => b[1].length - a[1].length)
+        .slice(0, 20)
+        .map(([tag, items]) => `
+          <span class="pill pill-tag">${escapeHTML(tag)} · ${items.length}</span>
+        `)
+        .join("");
+
+      return `<div class="tag-cloud">${tags}</div>`;
+    }
+
+    function renderTrades() {
+      const filteredTrades = getFilteredTrades();
+      const tableArea = document.getElementById("tableArea");
+
+      if (filteredTrades.length === 0) {
+        tableArea.innerHTML = `<div class="empty">Henüz işlem yok veya filtreye uygun kayıt bulunamadı.</div>`;
+        return;
+      }
+
+      const rows = filteredTrades
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .map(trade => `
+          <tr>
+            <td>${escapeHTML(trade.date)}</td>
+            <td><strong>${escapeHTML(trade.symbol)}</strong></td>
+            <td>${escapeHTML(trade.market)}</td>
+            <td>
+              <span class="pill ${trade.direction === "Long" ? "pill-long" : "pill-short"}">
+                ${escapeHTML(trade.direction)}
+              </span>
+            </td>
+            <td>
+              <span class="pill ${trade.status === "Açık" ? "pill-open" : "pill-closed"}">
+                ${escapeHTML(trade.status || "Kapalı")}
+              </span>
+            </td>
+            <td>${escapeHTML(trade.strategy || "-")}</td>
+            <td>${formatNumber(trade.entry)}</td>
+            <td>${trade.status === "Açık" ? "-" : formatNumber(trade.exit)}</td>
+            <td>${formatNumber(trade.quantity)}</td>
+            <td class="${pnlClass(trade.netPnL)}"><strong>${formatPnLCell(trade)}</strong></td>
+            <td class="${pnlClass(trade.returnPct)}">${formatReturnCell(trade)}</td>
+            <td>${formatMoney(trade.riskAmount)}</td>
+            <td>${formatMoney(trade.rewardAmount)}</td>
+            <td>${formatNumber(trade.rrRatio)}</td>
+            <td>${formatRCell(trade)}</td>
+            <td>${escapeHTML(trade.ruleFollowed)}</td>
+            <td>${escapeHTML(trade.mood || "-")}</td>
+            <td>${renderPills(trade.mistakeTags, "pill-mistake")}</td>
+            <td>${renderPills(trade.tags, "pill-tag")}</td>
+            <td title="${escapeHTML(trade.note || "")}">${escapeHTML(shortText(trade.note || "-", 32))}</td>
+            <td>
+              <div class="row-actions">
+                <button onclick="editTrade(${trade.id})">Düzenle</button>
+                <button class="btn-danger" onclick="deleteTrade(${trade.id})">Sil</button>
+              </div>
+            </td>
+          </tr>
+        `)
+        .join("");
+
+      tableArea.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tarih</th>
+                <th>Sembol</th>
+                <th>Piyasa</th>
+                <th>Yön</th>
+                <th>Durum</th>
+                <th>Strateji</th>
+                <th>Giriş</th>
+                <th>Çıkış</th>
+                <th>Miktar</th>
+                <th>Net K/Z</th>
+                <th>Getiri</th>
+                <th>Risk</th>
+                <th>Ödül</th>
+                <th>R/R</th>
+                <th>R</th>
+                <th>Kural</th>
+                <th>Duygu</th>
+                <th>Hatalar</th>
+                <th>Etiketler</th>
+                <th>Not</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function getFilteredTrades() {
+      const symbol = document.getElementById("filterSymbol").value.trim().toUpperCase();
+      const strategy = document.getElementById("filterStrategy").value.trim().toLowerCase();
+      const tag = document.getElementById("filterTag").value.trim().toLowerCase();
+      const direction = document.getElementById("filterDirection").value;
+      const status = document.getElementById("filterStatus").value;
+      const result = document.getElementById("filterResult").value;
+      const rule = document.getElementById("filterRule").value;
+
+      return trades.filter(trade => {
+        const allTags = [
+          ...(trade.tags || []),
+          ...(trade.mistakeTags || [])
+        ].map(item => item.toLowerCase());
+
+        const matchesSymbol = !symbol || trade.symbol.includes(symbol);
+        const matchesStrategy = !strategy || (trade.strategy || "").toLowerCase().includes(strategy);
+        const matchesTag = !tag || allTags.some(item => item.includes(tag));
+        const matchesDirection = !direction || trade.direction === direction;
+        const matchesStatus = !status || trade.status === status;
+        const matchesRule = !rule || trade.ruleFollowed === rule;
+
+        let matchesResult = true;
+
+        if (result === "win") {
+          matchesResult = trade.status !== "Açık" && trade.netPnL > 0;
+        }
+
+        if (result === "loss") {
+          matchesResult = trade.status !== "Açık" && trade.netPnL < 0;
+        }
+
+        if (result === "breakeven") {
+          matchesResult = trade.status !== "Açık" && trade.netPnL === 0;
+        }
+
+        return (
+          matchesSymbol &&
+          matchesStrategy &&
+          matchesTag &&
+          matchesDirection &&
+          matchesStatus &&
+          matchesResult &&
+          matchesRule
+        );
+      });
+    }
+
+    function editTrade(id) {
+      const trade = trades.find(t => t.id === id);
+      if (!trade) return;
+
+      editingId = id;
+
+      document.getElementById("formTitle").textContent = "İşlemi Düzenle";
+      document.getElementById("submitBtn").textContent = "Güncelle";
+
+      document.getElementById("date").value = trade.date;
+      document.getElementById("symbol").value = trade.symbol;
+      document.getElementById("market").value = trade.market;
+      document.getElementById("direction").value = trade.direction;
+      document.getElementById("status").value = trade.status || "Kapalı";
+      document.getElementById("strategy").value = trade.strategy || "";
+      document.getElementById("entry").value = trade.entry;
+      document.getElementById("exit").value = trade.status === "Açık" ? "" : trade.exit;
+      document.getElementById("quantity").value = trade.quantity;
+      document.getElementById("commission").value = trade.commission || 0;
+      document.getElementById("stopLoss").value = trade.stopLoss || "";
+      document.getElementById("takeProfit").value = trade.takeProfit || "";
+      document.getElementById("mood").value = trade.mood || "";
+      document.getElementById("ruleFollowed").value = trade.ruleFollowed || "Evet";
+      document.getElementById("mistake").value = arrayToInput(trade.mistakeTags) || trade.mistake || "";
+      document.getElementById("tags").value = arrayToInput(trade.tags);
+      document.getElementById("note").value = trade.note || "";
+
+      toggleExitRequirement();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function deleteTrade(id) {
+      const confirmed = confirm("Bu işlemi silmek istediğine emin misin?");
+      if (!confirmed) return;
+
+      trades = trades.filter(trade => trade.id !== id);
+      saveTrades();
+      renderAll();
+
+      if (editingId === id) {
+        resetForm();
+      }
+    }
+
+    function resetForm() {
+      form.reset();
+      editingId = null;
+
+      document.getElementById("formTitle").textContent = "Yeni İşlem Ekle";
+      document.getElementById("submitBtn").textContent = "İşlemi Kaydet";
+      document.getElementById("commission").value = 0;
+      document.getElementById("status").value = "Kapalı";
+
+      setToday();
+      toggleExitRequirement();
+    }
+
+    function clearFilters() {
+      document.getElementById("filterSymbol").value = "";
+      document.getElementById("filterStrategy").value = "";
+      document.getElementById("filterTag").value = "";
+      document.getElementById("filterDirection").value = "";
+      document.getElementById("filterStatus").value = "";
+      document.getElementById("filterResult").value = "";
+      document.getElementById("filterRule").value = "";
+
+      renderAll();
+    }
+
+    function toggleExitRequirement() {
+      const status = document.getElementById("status").value;
+      const exitInput = document.getElementById("exit");
+
+      if (status === "Açık") {
+        exitInput.required = false;
+        exitInput.value = "";
+        exitInput.placeholder = "Açık işlemde boş bırak";
+      } else {
+        exitInput.required = true;
+        exitInput.placeholder = "Kapalı işlemde zorunlu";
+      }
+    }
+
+    function saveTrades() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(trades));
+    }
+
+    function loadTrades() {
+      const savedV4 = localStorage.getItem(STORAGE_KEY);
+      const savedV3 = localStorage.getItem("tradingJournalTrades_v3");
+      const savedV2 = localStorage.getItem("tradingJournalTrades_v2");
+      const savedV1 = localStorage.getItem("tradingJournalTrades_v1");
+
+      try {
+        trades = savedV4
+          ? JSON.parse(savedV4)
+          : savedV3
+            ? JSON.parse(savedV3)
+            : savedV2
+              ? JSON.parse(savedV2)
+              : savedV1
+                ? JSON.parse(savedV1)
+                : [];
+
+        trades = trades.map(normalizeTrade);
+        saveTrades();
+      } catch (error) {
+        console.error("Veri okunamadı:", error);
+        trades = [];
+      }
+    }
+
+    function normalizeTrade(trade) {
+      const mistakeTags = Array.isArray(trade.mistakeTags)
+        ? trade.mistakeTags
+        : parseTags(trade.mistake || "");
+
+      const tags = Array.isArray(trade.tags)
+        ? trade.tags
+        : [];
+
+      return calculateTrade({
+        ...trade,
+        status: trade.status || "Kapalı",
+        mistakeTags,
+        tags
+      });
+    }
+
+    function exportJSON() {
+      const data = JSON.stringify(trades, null, 2);
+      downloadFile(data, "trading-gunlugu-yedek.json", "application/json");
+    }
+
+    function importJSON() {
+      const fileInput = document.getElementById("importFile");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Lütfen bir JSON dosyası seç.");
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+        try {
+          const importedTrades = JSON.parse(event.target.result);
+
+          if (!Array.isArray(importedTrades)) {
+            alert("Geçersiz JSON formatı. Dosya bir işlem listesi içermeli.");
+            return;
+          }
+
+          const confirmed = confirm("Mevcut verilerin üzerine yazılsın mı?");
+          if (!confirmed) return;
+
+          trades = importedTrades.map(normalizeTrade);
+          saveTrades();
+          renderAll();
+          fileInput.value = "";
+
+          alert("Veriler başarıyla içe aktarıldı.");
+        } catch (error) {
+          alert("JSON dosyası okunamadı.");
+        }
+      };
+
+      reader.readAsText(file);
+    }
+
+    function exportCSV() {
+      if (trades.length === 0) {
+        alert("Dışa aktarılacak işlem yok.");
+        return;
+      }
+
+      const headers = [
+        "Tarih",
+        "Sembol",
+        "Piyasa",
+        "Yön",
+        "Durum",
+        "Strateji",
+        "Giriş",
+        "Çıkış",
+        "Miktar",
+        "Komisyon",
+        "Stop Loss",
+        "Take Profit",
+        "Brüt K/Z",
+        "Net K/Z",
+        "Getiri %",
+        "Risk Tutarı",
+        "Ödül Tutarı",
+        "Risk/Ödül",
+        "R Multiple",
+        "Duygu",
+        "Kurala Uyum",
+        "Hata Etiketleri",
+        "Genel Etiketler",
+        "Not"
+      ];
+
+      const rows = trades.map(t => [
+        t.date,
+        t.symbol,
+        t.market,
+        t.direction,
+        t.status || "Kapalı",
+        t.strategy,
+        t.entry,
+        t.status === "Açık" ? "" : t.exit,
+        t.quantity,
+        t.commission,
+        t.stopLoss,
+        t.takeProfit,
+        t.grossPnL,
+        t.netPnL,
+        t.returnPct,
+        t.riskAmount,
+        t.rewardAmount,
+        t.rrRatio,
+        t.rMultiple,
+        t.mood,
+        t.ruleFollowed,
+        arrayToInput(t.mistakeTags),
+        arrayToInput(t.tags),
+        t.note
+      ]);
+
+      const csvContent = [
+        headers,
+        ...rows
+      ]
+        .map(row => row.map(csvEscape).join(";"))
+        .join("\n");
+
+      downloadFile("\uFEFF" + csvContent, "trading-gunlugu.csv", "text/csv;charset=utf-8;");
+    }
+
+    function clearAllData() {
+      const confirmed = confirm("Tüm işlem kayıtları silinecek. Emin misin?");
+      if (!confirmed) return;
+
+      trades = [];
+      saveTrades();
+      resetForm();
+      renderAll();
+    }
+
+    function fillDemoData() {
+      const confirmed = confirm("Demo veri eklensin mi? Mevcut veriler korunur.");
+      if (!confirmed) return;
+
+      const demo = [
+        {
+          date: "2026-06-10",
+          symbol: "THYAO",
+          market: "BIST",
+          direction: "Long",
+          status: "Kapalı",
+          strategy: "Destek-Direnç",
+          entry: 300,
+          exit: 315,
+          quantity: 100,
+          commission: 25,
+          stopLoss: 292,
+          takeProfit: 325,
+          mood: "Sakin",
+          ruleFollowed: "Evet",
+          mistake: "",
+          mistakeTags: [],
+          tags: ["destek", "hacim", "planlı işlem"],
+          note: "Destekten tepki sonrası planlı giriş."
+        },
+        {
+          date: "2026-06-09",
+          symbol: "BTCUSDT",
+          market: "Kripto",
+          direction: "Short",
+          status: "Kapalı",
+          strategy: "Breakdown",
+          entry: 70000,
+          exit: 71000,
+          quantity: 0.02,
+          commission: 2,
+          stopLoss: 70800,
+          takeProfit: 68000,
+          mood: "Aceleci",
+          ruleFollowed: "Hayır",
+          mistake: "FOMO, stop taşımak",
+          mistakeTags: ["FOMO", "stop taşımak"],
+          tags: ["volatilite", "plansız işlem"],
+          note: "Onay gelmeden işleme girildi."
+        },
+        {
+          date: "2026-06-08",
+          symbol: "ASELS",
+          market: "BIST",
+          direction: "Long",
+          status: "Kapalı",
+          strategy: "Breakout",
+          entry: 140,
+          exit: 136,
+          quantity: 200,
+          commission: 30,
+          stopLoss: 137,
+          takeProfit: 150,
+          mood: "Özgüvenli",
+          ruleFollowed: "Kısmen",
+          mistake: "geç giriş",
+          mistakeTags: ["geç giriş"],
+          tags: ["direnç kırılımı", "endeks zayıf"],
+          note: "Kırılım sonrası geç kalınmış giriş."
+        },
+        {
+          date: "2026-06-11",
+          symbol: "KCHOL",
+          market: "BIST",
+          direction: "Long",
+          status: "Açık",
+          strategy: "Pullback",
+          entry: 180,
+          exit: 0,
+          quantity: 100,
+          commission: 0,
+          stopLoss: 174,
+          takeProfit: 195,
+          mood: "Sakin",
+          ruleFollowed: "Evet",
+          mistake: "",
+          mistakeTags: [],
+          tags: ["açık pozisyon", "pullback", "destek"],
+          note: "Pozisyon açık. Stop ve hedef belirli."
+        },
+        {
+          date: "2026-06-12",
+          symbol: "KCHOL",
+          market: "BIST",
+          direction: "Long",
+          status: "Açık",
+          strategy: "Ek Alım",
+          entry: 174,
+          exit: 0,
+          quantity: 50,
+          commission: 0,
+          stopLoss: 170,
+          takeProfit: 195,
+          mood: "Sakin",
+          ruleFollowed: "Evet",
+          mistake: "",
+          mistakeTags: [],
+          tags: ["ek alım", "ortalama maliyet"],
+          note: "Aynı hissede ikinci açık pozisyon."
+        }
+      ];
+
+      demo.forEach(item => {
+        trades.push({
+          ...calculateTrade(item),
+          id: Date.now() + Math.floor(Math.random() * 10000)
+        });
+      });
+
+      saveTrades();
+      renderAll();
+    }
+
+    function groupBySingleValue(items, key, fallback) {
+      return items.reduce((acc, item) => {
+        const value = item[key] || fallback;
+        if (!acc[value]) acc[value] = [];
+        acc[value].push(item);
+        return acc;
+      }, {});
+    }
+
+    function groupByArrayValue(items, key) {
+      return items.reduce((acc, item) => {
+        const values = Array.isArray(item[key]) ? item[key] : [];
+
+        values.forEach(value => {
+          if (!acc[value]) acc[value] = [];
+          acc[value].push(item);
+        });
+
+        return acc;
+      }, {});
+    }
+
+    function getMostCostlyItem(key) {
+      const closedTrades = trades.filter(t => t.status !== "Açık");
+      const grouped = groupByArrayValue(closedTrades, key);
+
+      const sorted = Object.entries(grouped)
+        .map(([name, items]) => ({
+          name,
+          totalPnL: sum(items.map(t => t.netPnL || 0))
+        }))
+        .sort((a, b) => a.totalPnL - b.totalPnL);
+
+      return sorted.length ? sorted[0].name : "";
+    }
+
+    function getBestGroupByAverage(key) {
+      const closedTrades = trades.filter(t => t.status !== "Açık" && t[key]);
+
+      const grouped = groupBySingleValue(
+        closedTrades,
+        key,
+        "Belirtilmemiş"
+      );
+
+      const sorted = Object.entries(grouped)
+        .map(([name, items]) => ({
+          name,
+          avgPnL: sum(items.map(t => t.netPnL || 0)) / items.length
+        }))
+        .sort((a, b) => b.avgPnL - a.avgPnL);
+
+      return sorted.length ? sorted[0].name : "";
+    }
+
+    function getUniqueTagCount() {
+      const allTags = trades.flatMap(t => [
+        ...(t.tags || []),
+        ...(t.mistakeTags || [])
+      ]);
+
+      return new Set(allTags.map(t => t.toLowerCase())).size;
+    }
+
+    function parseTags(value) {
+      if (!value) return [];
+
+      return value
+        .split(",")
+        .map(item => item.trim())
+        .filter(Boolean)
+        .filter((item, index, array) => {
+          return array.findIndex(x => x.toLowerCase() === item.toLowerCase()) === index;
+        });
+    }
+
+    function arrayToInput(array) {
+      if (!Array.isArray(array)) return "";
+      return array.join(", ");
+    }
+
+    function renderPills(items, className) {
+      if (!Array.isArray(items) || items.length === 0) return "-";
+
+      return items
+        .map(item => `<span class="pill ${className}">${escapeHTML(item)}</span>`)
+        .join("");
+    }
+
+    function formatPnLCell(trade) {
+      if (trade.status === "Açık") return "Açık";
+      return formatMoney(trade.netPnL);
+    }
+
+    function formatReturnCell(trade) {
+      if (trade.status === "Açık") return "-";
+      return `${formatNumber(trade.returnPct)}%`;
+    }
+
+    function formatRCell(trade) {
+      if (trade.status === "Açık") return "-";
+      return formatNumber(trade.rMultiple);
+    }
+
+    function formatNullable(value) {
+      if (value === null || value === undefined || isNaN(value)) return "-";
+      return formatNumber(value);
+    }
+
+    function parseUserNumber(value) {
+      if (value === null || value === undefined) return 0;
+
+      const raw = String(value).trim();
+
+      if (!raw) return 0;
+
+      let normalized = raw;
+
+      if (raw.includes(",") && raw.includes(".")) {
+        normalized = raw.replace(/\./g, "").replace(",", ".");
+      } else if (raw.includes(",")) {
+        normalized = raw.replace(",", ".");
+      }
+
+      const number = Number(normalized);
+
+      return isNaN(number) ? 0 : number;
+    }
+
+    function downloadFile(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function toNumber(value) {
+      const number = Number(value);
+      return isNaN(number) ? 0 : number;
+    }
+
+    function sum(numbers) {
+      return numbers.reduce((total, number) => total + number, 0);
+    }
+
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString("tr-TR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function formatMoney(value) {
+      return Number(value || 0).toLocaleString("tr-TR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function pnlClass(value) {
+      if (value > 0) return "positive";
+      if (value < 0) return "negative";
+      return "neutral";
+    }
+
+    function shortText(text, maxLength) {
+      if (!text) return "";
+      return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+    }
+
+    function csvEscape(value) {
+      if (value === null || value === undefined) return "";
+      const stringValue = String(value).replace(/"/g, '""');
+      return `"${stringValue}"`;
+    }
+
+    function escapeHTML(value) {
+      if (value === null || value === undefined) return "";
+
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>
