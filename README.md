@@ -125,18 +125,6 @@ Düzenli olarak JSON yedeği almak önerilir.
 
 ---
 
-## JSON Dosyasıyla Analiz
-
-Uygulamadan aldığınız JSON dosyasını ChatGPT’ye yükleyerek performans analizi isteyebilirsiniz.
-
-Örnek istek:
-
-```text
-Bu trading günlüğü JSON dosyamı analiz et. Strateji, sembol, hata, psikoloji ve risk yönetimi açısından güçlü/zayıf yönlerimi çıkar. Bana uygulanabilir iyileştirme önerileri ver.
-```
-
----
-
 ## Mobil Kullanım
 
 Uygulama mobil uyumludur. Telefonda işlem listesi kart görünümünde gösterilir. Açık, takip ve kapalı kayıtlar mobil ekranda daha rahat okunacak şekilde düzenlenir.
