@@ -539,6 +539,74 @@
       overflow-wrap: anywhere;
     }
 
+    .mobile-card-summary {
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .mobile-card-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .mobile-card-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .mobile-card-chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.12);
+      color: var(--muted);
+      font-weight: 700;
+      transition: transform 0.15s ease;
+    }
+
+    .trade-mobile-card[open] .mobile-card-chevron {
+      transform: rotate(180deg);
+    }
+
+    .mobile-card-preview {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .mobile-card-preview span {
+      background: rgba(2, 6, 23, 0.45);
+      border: 1px solid rgba(51, 65, 85, 0.7);
+      border-radius: 10px;
+      padding: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .mobile-card-tap-hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .trade-mobile-card[open] .mobile-card-tap-hint {
+      display: none;
+    }
+
+    .mobile-card-content {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(51, 65, 85, 0.7);
+    }
+
     @media (max-width: 1250px) {
       .dashboard {
         grid-template-columns: repeat(2, 1fr);
@@ -642,7 +710,8 @@
         display: block;
       }
 
-      .mobile-card-grid {
+      .mobile-card-grid,
+      .mobile-card-preview {
         grid-template-columns: 1fr;
       }
 
@@ -2819,74 +2888,102 @@
         .join("");
 
       const cards = sortedTrades
-        .map(trade => `
-          <div class="mobile-card">
-            <div class="mobile-card-header">
-              <div>
-                <div class="mobile-card-title">${escapeHTML(trade.symbol)}</div>
-                <div class="mobile-card-subtitle">${escapeHTML(trade.date)} · ${escapeHTML(trade.market)}</div>
+        .map(trade => {
+          const headlinePnL = trade.status === "Kapalı"
+            ? formatPnLCell(trade)
+            : formatUnrealizedCell(trade);
+
+          const headlinePnLClass = trade.status === "Kapalı"
+            ? pnlClass(trade.netPnL)
+            : pnlClass(trade.unrealizedPnL);
+
+          const headlinePnLLabel = trade.status === "Kapalı"
+            ? "Net K/Z"
+            : "Tahmini K/Z";
+
+          return `
+            <details class="mobile-card trade-mobile-card">
+              <summary class="mobile-card-summary" aria-label="${escapeHTML(trade.symbol)} işlem kartını aç veya kapat">
+                <div class="mobile-card-header">
+                  <div>
+                    <div class="mobile-card-title">${escapeHTML(trade.symbol)}</div>
+                    <div class="mobile-card-subtitle">
+                      ${escapeHTML(trade.date)} · ${escapeHTML(trade.market)} · ${escapeHTML(trade.strategy || "Strateji yok")}
+                    </div>
+                  </div>
+                  <div class="mobile-card-badges">
+                    <span class="pill ${trade.direction === "Long" ? "pill-long" : "pill-short"}">${escapeHTML(trade.direction)}</span>
+                    <span class="pill ${statusPillClass(trade.status)}">${escapeHTML(trade.status || "Kapalı")}</span>
+                    <span class="mobile-card-chevron">⌄</span>
+                  </div>
+                </div>
+                <div class="mobile-card-preview">
+                  <span>Giriş: <strong>${formatNumber(trade.entry)}</strong></span>
+                  <span>Güncel: <strong>${formatCurrentPriceCell(trade)}</strong></span>
+                  <span>${headlinePnLLabel}: <strong class="${headlinePnLClass}">${headlinePnL}</strong></span>
+                </div>
+                <div class="mobile-card-tap-hint">Detayları görmek için dokun</div>
+              </summary>
+
+              <div class="mobile-card-content">
+                <div class="mobile-card-grid">
+                  ${mobileField("Strateji", escapeHTML(trade.strategy || "-"))}
+                  ${mobileField("İşlem Tipi", escapeHTML(trade.tradeType || "-"))}
+                  ${mobileField("Ana Gerekçe", escapeHTML(trade.mainReason || "-"))}
+                  ${mobileField("Kurulum", formatScoreCell(trade.setupQualityScore))}
+                  ${mobileField("Zaman", escapeHTML(trade.timeframe || "-"))}
+                  ${mobileField("Piyasa", escapeHTML(trade.marketCondition || "-"))}
+                  ${mobileField("Çıkış Nedeni", escapeHTML(trade.exitReason || "-"))}
+                  ${mobileField("Takip Nedeni", escapeHTML(trade.watchReason || "-"))}
+                  ${mobileField("Takip Sonucu", escapeHTML(trade.watchOutcome || "-"))}
+                  ${mobileField("İşleme Döndü", formatYesNoCell(trade.convertedToTrade))}
+                  ${mobileField("Hedefe Ulaştı", formatYesNoCell(trade.watchTargetReached, isTargetReached(trade)))}
+                  ${mobileField("İptal Çalıştı", formatYesNoCell(trade.watchStopTriggered, isStopReached(trade)))}
+                  ${mobileField("Portföy", trade.portfolioValue > 0 ? formatMoney(trade.portfolioValue) : "-")}
+                  ${mobileField("Risk %", trade.riskPctOfPortfolio === null ? "-" : `${formatNumber(trade.riskPctOfPortfolio)}%`)}
+                  ${mobileField("Pozisyon %", trade.positionPctOfPortfolio === null ? "-" : `${formatNumber(trade.positionPctOfPortfolio)}%`)}
+                  ${mobileField("Güven", formatScoreCell(trade.confidenceScore))}
+                  ${mobileField("Stres", formatScoreCell(trade.stressScore))}
+                  ${mobileField("Sabır", formatScoreCell(trade.patienceScore))}
+                  ${mobileField("Plan Giriş", formatOptionalNumber(trade.plannedEntry))}
+                  ${mobileField("Giriş", formatNumber(trade.entry))}
+                  ${mobileField("Çıkış", trade.status === "Kapalı" ? formatNumber(trade.exit) : "-")}
+                  ${mobileField("Güncel", formatCurrentPriceCell(trade))}
+                  ${mobileField("Miktar", formatNumber(trade.quantity))}
+                  ${mobileField("Net K/Z", formatPnLCell(trade), pnlClass(trade.netPnL))}
+                  ${mobileField("Tahmini K/Z", formatUnrealizedCell(trade), pnlClass(trade.unrealizedPnL))}
+                  ${mobileField("Getiri", formatReturnCell(trade), pnlClass(trade.returnPct))}
+                  ${mobileField("Risk", formatMoney(trade.riskAmount))}
+                  ${mobileField("Ödül", formatMoney(trade.rewardAmount))}
+                  ${mobileField("R/R", formatNumber(trade.rrRatio))}
+                  ${mobileField("R", formatRCell(trade))}
+                  ${mobileField("Hedefe", formatLevelDistanceCell(trade.targetDistance, trade.targetDistancePct, "kaldı", "hedef geçti"), targetDistanceClass(trade))}
+                  ${mobileField("Stopa", formatLevelDistanceCell(trade.stopDistance, trade.stopDistancePct, "mesafe", "stop aşıldı"), stopDistanceClass(trade))}
+                  ${mobileField("Takip Potansiyeli", formatWatchOpportunityCell(trade), pnlClass(trade.watchOpportunityPnL))}
+                  ${mobileField("Kural", escapeHTML(trade.ruleFollowed || "-"))}
+                  ${mobileField("Duygu", escapeHTML(trade.mood || "-"))}
+                </div>
+                <div class="mobile-card-note">
+                  <strong>Hatalar:</strong> ${renderPills(trade.mistakeTags, "pill-mistake")}<br />
+                  <strong>Etiketler:</strong> ${renderPills(trade.tags, "pill-tag")}<br />
+                  <strong>Kaçırılan Fırsat:</strong> ${escapeHTML(trade.missedOpportunityNote || "-")}<br />
+                  <strong>Not:</strong> ${escapeHTML(trade.note || "-")}
+                </div>
+                <div class="actions">
+                  <select
+                    class="inline-status-select"
+                    title="Pozisyon durumunu güncelle"
+                    onchange="quickUpdateTradeStatus(${trade.id}, this.value)">
+                    ${statusSelectOptions(trade.status)}
+                  </select>
+                  ${trade.status !== "Kapalı" ? `<button class="btn-purple" onclick="updateSymbolCurrentPrice('${encodeURIComponent(trade.symbol)}')">Fiyat Gir</button>` : ""}
+                  <button onclick="editTrade(${trade.id})">Düzenle</button>
+                  <button class="btn-danger" onclick="deleteTrade(${trade.id})">Sil</button>
+                </div>
               </div>
-              <div>
-                <span class="pill ${trade.direction === "Long" ? "pill-long" : "pill-short"}">${escapeHTML(trade.direction)}</span>
-                <span class="pill ${statusPillClass(trade.status)}">${escapeHTML(trade.status || "Kapalı")}</span>
-              </div>
-            </div>
-            <div class="mobile-card-grid">
-              ${mobileField("Strateji", escapeHTML(trade.strategy || "-"))}
-              ${mobileField("İşlem Tipi", escapeHTML(trade.tradeType || "-"))}
-              ${mobileField("Ana Gerekçe", escapeHTML(trade.mainReason || "-"))}
-              ${mobileField("Kurulum", formatScoreCell(trade.setupQualityScore))}
-              ${mobileField("Zaman", escapeHTML(trade.timeframe || "-"))}
-              ${mobileField("Piyasa", escapeHTML(trade.marketCondition || "-"))}
-              ${mobileField("Çıkış Nedeni", escapeHTML(trade.exitReason || "-"))}
-              ${mobileField("Takip Nedeni", escapeHTML(trade.watchReason || "-"))}
-              ${mobileField("Takip Sonucu", escapeHTML(trade.watchOutcome || "-"))}
-              ${mobileField("İşleme Döndü", formatYesNoCell(trade.convertedToTrade))}
-              ${mobileField("Hedefe Ulaştı", formatYesNoCell(trade.watchTargetReached, isTargetReached(trade)))}
-              ${mobileField("İptal Çalıştı", formatYesNoCell(trade.watchStopTriggered, isStopReached(trade)))}
-              ${mobileField("Portföy", trade.portfolioValue > 0 ? formatMoney(trade.portfolioValue) : "-")}
-              ${mobileField("Risk %", trade.riskPctOfPortfolio === null ? "-" : `${formatNumber(trade.riskPctOfPortfolio)}%`)}
-              ${mobileField("Pozisyon %", trade.positionPctOfPortfolio === null ? "-" : `${formatNumber(trade.positionPctOfPortfolio)}%`)}
-              ${mobileField("Güven", formatScoreCell(trade.confidenceScore))}
-              ${mobileField("Stres", formatScoreCell(trade.stressScore))}
-              ${mobileField("Sabır", formatScoreCell(trade.patienceScore))}
-              ${mobileField("Plan Giriş", formatOptionalNumber(trade.plannedEntry))}
-              ${mobileField("Giriş", formatNumber(trade.entry))}
-              ${mobileField("Çıkış", trade.status === "Kapalı" ? formatNumber(trade.exit) : "-")}
-              ${mobileField("Güncel", formatCurrentPriceCell(trade))}
-              ${mobileField("Miktar", formatNumber(trade.quantity))}
-              ${mobileField("Net K/Z", formatPnLCell(trade), pnlClass(trade.netPnL))}
-              ${mobileField("Tahmini K/Z", formatUnrealizedCell(trade), pnlClass(trade.unrealizedPnL))}
-              ${mobileField("Getiri", formatReturnCell(trade), pnlClass(trade.returnPct))}
-              ${mobileField("Risk", formatMoney(trade.riskAmount))}
-              ${mobileField("Ödül", formatMoney(trade.rewardAmount))}
-              ${mobileField("R/R", formatNumber(trade.rrRatio))}
-              ${mobileField("R", formatRCell(trade))}
-              ${mobileField("Hedefe", formatLevelDistanceCell(trade.targetDistance, trade.targetDistancePct, "kaldı", "hedef geçti"), targetDistanceClass(trade))}
-              ${mobileField("Stopa", formatLevelDistanceCell(trade.stopDistance, trade.stopDistancePct, "mesafe", "stop aşıldı"), stopDistanceClass(trade))}
-              ${mobileField("Takip Potansiyeli", formatWatchOpportunityCell(trade), pnlClass(trade.watchOpportunityPnL))}
-              ${mobileField("Kural", escapeHTML(trade.ruleFollowed || "-"))}
-              ${mobileField("Duygu", escapeHTML(trade.mood || "-"))}
-            </div>
-            <div class="mobile-card-note">
-              <strong>Hatalar:</strong> ${renderPills(trade.mistakeTags, "pill-mistake")}<br />
-              <strong>Etiketler:</strong> ${renderPills(trade.tags, "pill-tag")}<br />
-              <strong>Kaçırılan Fırsat:</strong> ${escapeHTML(trade.missedOpportunityNote || "-")}<br />
-              <strong>Not:</strong> ${escapeHTML(trade.note || "-")}
-            </div>
-            <div class="actions">
-              <select
-                class="inline-status-select"
-                title="Pozisyon durumunu güncelle"
-                onchange="quickUpdateTradeStatus(${trade.id}, this.value)">
-                ${statusSelectOptions(trade.status)}
-              </select>
-              ${trade.status !== "Kapalı" ? `<button class="btn-purple" onclick="updateSymbolCurrentPrice('${encodeURIComponent(trade.symbol)}')">Fiyat Gir</button>` : ""}
-              <button onclick="editTrade(${trade.id})">Düzenle</button>
-              <button class="btn-danger" onclick="deleteTrade(${trade.id})">Sil</button>
-            </div>
-          </div>
-        `)
+            </details>
+          `;
+        })
         .join("");
 
       tableArea.innerHTML = `
